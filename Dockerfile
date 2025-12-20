@@ -28,7 +28,7 @@ RUN useradd -m -s /bin/bash node
 RUN npm install -g n8n
 
 # Install Python packages
-RUN pip3 install playwright
+RUN pip3 install playwright flask
 
 # Install Playwright browsers and dependencies
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
@@ -38,6 +38,9 @@ RUN python3 -m playwright install-deps chromium
 # Copy calendar extraction script
 COPY extract_childcarecrm.py /home/node/extract_childcarecrm.py
 RUN chmod +x /home/node/extract_childcarecrm.py
+
+COPY api.py /home/node/api.py
+RUN chmod +x /home/node/api.py
 
 # Switch to node user
 USER node
