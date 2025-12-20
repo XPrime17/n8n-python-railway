@@ -35,14 +35,22 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN python3 -m playwright install chromium
 RUN python3 -m playwright install-deps chromium
 
-# Copy calendar extraction script
+# Copy files
 COPY extract_childcarecrm.py /home/node/extract_childcarecrm.py
-RUN chmod +x /home/node/extract_childcarecrm.py
-
 COPY api.py /home/node/api.py
+RUN chmod +x /home/node/extract_childcarecrm.py
 RUN chmod +x /home/node/api.py
 
-# Switch to node user
+# Install Flask
+RUN pip3 install flask
+
+# Create startup script that runs both n8n and Flask API
+RUN echo '#!/bin/bash\n\
+n8n &\n\
+python3 /home/node/api.py\n\
+' > /home/node/start.sh && chmod +x /home/node/start.sh
+
+# Switch back to node user
 USER node
 WORKDIR /home/node
 
@@ -50,8 +58,8 @@ WORKDIR /home/node
 ENV N8N_USER_FOLDER=/home/node/.n8n
 ENV N8N_PORT=5678
 
-# Expose port
-EXPOSE 5678
+# Expose both ports
+EXPOSE 5678 5000
 
-# Start n8n
-CMD ["n8n"]
+# Start both services
+CMD ["/bin/bash", "/home/node/start.sh"]
